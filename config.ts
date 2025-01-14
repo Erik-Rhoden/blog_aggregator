@@ -7,7 +7,7 @@ type Config = {
     currentUserName?: string;
 }
 
-function readConfig(): Config {
+export function readConfig(): Config {
     try {
         const file_path = getConfigFilePath()
         const read = fs.readFileSync(file_path, 'utf8')
@@ -34,4 +34,19 @@ function validateConfig(rawConfig: any): Config {
         config["currentUserName"] = rawConfig["current_user_name"]
     }
     return config
+}
+
+function writeConfig(cfg: Config): void {
+    const fileConfig = {
+        "db_url": cfg.dbUrl,
+        "current_user_name": cfg.currentUserName
+    }
+    const configJSON = JSON.stringify(fileConfig)
+    fs.writeFileSync(getConfigFilePath(), configJSON)
+}
+
+export function setUser(username: string): void {
+    const user = readConfig()
+    user.currentUserName = username
+    writeConfig(user)
 }
