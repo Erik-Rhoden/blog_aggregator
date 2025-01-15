@@ -4,18 +4,31 @@ import path from "path";
 
 type Config = {
     dbUrl: string;
-    currentUserName?: string;
+    currentUserName?: string | null;
 }
 
 export function readConfig(): Config {
+    const file_path = getConfigFilePath()
+
+    if (!fs.existsSync(file_path)) {
+        const defaultConfig = {
+            db_url: "postgres://example",
+            current_user_name: null,
+        };
+        fs.writeFileSync(file_path, JSON.stringify(defaultConfig, null, 2));
+    }
+
     try {
-        const file_path = getConfigFilePath()
         const read = fs.readFileSync(file_path, 'utf8')
         const rawConfig = JSON.parse(read)
         const valid_check = validateConfig(rawConfig)
         return valid_check
     } catch (error) {
-        throw error;
+        if (error instanceof SyntaxError) {
+            throw new Error(`Invalid JSON in configuration file: ${file_path}`);
+        } else {
+            throw error;
+        }
     }
 }
 
@@ -30,9 +43,16 @@ function validateConfig(rawConfig: any): Config {
     } else {
         throw new Error("The url is invalid!")
     }
-    if ("current_user_name" in rawConfig && typeof rawConfig["current_user_name"] === "string") {
-        config["currentUserName"] = rawConfig["current_user_name"]
+    if ("current_user_name" in rawConfig) {
+        if (typeof rawConfig["current_user_name"] === "string") {
+            config["currentUserName"] = rawConfig["current_user_name"];
+        } else {
+            throw new Error("The current_user_name must be a string!");
+        }
+    } else {
+        config["currentUserName"] = null;
     }
+
     return config
 }
 
