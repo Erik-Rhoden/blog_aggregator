@@ -4,7 +4,7 @@ import path from "path";
 
 type Config = {
     dbUrl: string;
-    currentUserName?: string | null;
+    currentUserName: string;
 }
 
 export type CommandHandler =
@@ -69,20 +69,18 @@ function validateConfig(rawConfig: any): Config {
         throw new Error("The url is invalid!")
     }
     if ("current_user_name" in rawConfig) {
-        if (rawConfig["current_user_name"] === null || typeof rawConfig["current_user_name"] === "string") {
+        if (typeof rawConfig["current_user_name"] === "string") {
             config["currentUserName"] = rawConfig["current_user_name"];
         } else {
             throw new Error("The current_user_name must be a string!");
         }
-    } else {
-        config["currentUserName"] = null;
-    }
+    };
 
     return config
 }
 
 function writeConfig(cfg: Config): void {
-    if (cfg.currentUserName !== null && typeof cfg.currentUserName !== 'string') {
+    if (typeof cfg.currentUserName !== 'string') {
         throw new Error("The current_user_name must be a string!")
     }
     const fileConfig = {
