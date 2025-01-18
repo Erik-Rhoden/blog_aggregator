@@ -25,10 +25,10 @@ export function runCommand(registry: CommandsRegistry, cmdName: string, ...args:
 }
 
 export function handlerLogin(cmdName: string, ...args: string[]) {
-    if (args.length === 0) {
+    if (args.length === 0 || !args[0] || args[0].trim() === '') {
         throw new Error("Login requires a username. Please try again.")
-    };
-    setUser(args[0]);
+    }
+    setUser(args[0].trim());
     console.log(`${args[0]} has been set`)
 }
 
@@ -69,7 +69,7 @@ function validateConfig(rawConfig: any): Config {
         throw new Error("The url is invalid!")
     }
     if ("current_user_name" in rawConfig) {
-        if (typeof rawConfig["current_user_name"] === "string") {
+        if (rawConfig["current_user_name"] === null || typeof rawConfig["current_user_name"] === "string") {
             config["currentUserName"] = rawConfig["current_user_name"];
         } else {
             throw new Error("The current_user_name must be a string!");
@@ -82,6 +82,9 @@ function validateConfig(rawConfig: any): Config {
 }
 
 function writeConfig(cfg: Config): void {
+    if (cfg.currentUserName !== null && typeof cfg.currentUserName !== 'string') {
+        throw new Error("The current_user_name must be a string!")
+    }
     const fileConfig = {
         "db_url": cfg.dbUrl,
         "current_user_name": cfg.currentUserName
